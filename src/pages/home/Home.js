@@ -1,9 +1,9 @@
 // src/pages/Home.js
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import data from "../data/bikes.json";
+import data from "../../data/bikes.json";
 import "./Home.css"; // optional custom styles
-import Footer from "../components/footer/Footer";
+import Footer from "../../components/footer/Footer";
 
 const Home = () => {
   return (

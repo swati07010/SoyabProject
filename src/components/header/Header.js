@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Header.css";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../features/auth/authSlice"; // ✅ import logout action
-
+import SmartDrive from "../../assets/logo.png"; // ✅ import logo
 const Header = () => {
   const dispatch = useDispatch();
 
@@ -15,6 +15,7 @@ const Header = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     dispatch(logout());
+    navigate("/login");
   };
   const navigate = useNavigate();
   const goHome = () => {
@@ -25,7 +26,7 @@ const Header = () => {
     <header className="header">
       {/* Logo Section */}
       <div className="logo-section" onClick={goHome}>
-        <img src="/logo192.png" alt="SmartDrive Logo" className="logo" />
+        <img src={SmartDrive} alt="SmartDrive Logo" className="logo" />
         <h1 className="company-name">SmartDrive</h1>
       </div>
 
@@ -35,7 +36,7 @@ const Header = () => {
           <>
             <div className="nav-links">
               <div className="nav-link-item">
-                <Link to="/profile" className="profile-link">
+                <Link to="/profile" className="documents-link">
                   <i className="bi bi-person-circle border-none"></i>
                   <span className="user-info">
                     {user?.name?.trim().split(" ")[0]}
@@ -43,9 +44,9 @@ const Header = () => {
                 </Link>
               </div>
               <div className="nav-link-item">
-                <button type="logout-button" onClick={handleLogout}>
+                {/* <button type="logout-button" onClick={handleLogout}>
                   Logout
-                </button>
+                </button> */}
               </div>
             </div>
           </>

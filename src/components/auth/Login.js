@@ -37,7 +37,7 @@ function Login() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/");
+      navigate("/documents");
     }
   }, [isLoggedIn, navigate]);
 

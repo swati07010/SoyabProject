@@ -5,7 +5,7 @@
     "type": "commuter",
     "pricePerHour": 10,
     "available": 5,
-    "image": "https://static.vecteezy.com/system/resources/thumbnails/035/718/525/small_2x/electric-scooter-and-charging-station-png.png"
+    "image": "/assets/b1.png"
   },
   {
     "id": 2,
@@ -13,7 +13,7 @@
     "type": "cruiser",
     "pricePerHour": 15,
     "available": 3,
-    "image": "https://static.vecteezy.com/system/resources/thumbnails/035/718/525/small_2x/electric-scooter-and-charging-station-png.png"
+    "image": "/assets/b2.png"
   },
   {
     "id": 3,
@@ -21,7 +21,7 @@
     "type": "cruiser",
     "pricePerHour": 15,
     "available": 3,
-    "image": "https://static.vecteezy.com/system/resources/thumbnails/035/718/525/small_2x/electric-scooter-and-charging-station-png.png"
+    "image": "/assets/b3.png"
   },
   {
     "id": 4,
@@ -29,7 +29,7 @@
     "type": "cruiser",
     "pricePerHour": 15,
     "available": 3,
-    "image": "https://static.vecteezy.com/system/resources/thumbnails/035/718/525/small_2x/electric-scooter-and-charging-station-png.png"
+    "image": "/assets/b22.png"
   },
 
   {
@@ -38,6 +38,15 @@
     "type": "cruiser",
     "pricePerHour": 15,
     "available": 3,
-    "image": "https://static.vecteezy.com/system/resources/thumbnails/035/718/525/small_2x/electric-scooter-and-charging-station-png.png"
+    "image": "/assets/bb1.png"
+  },
+
+  {
+    "id": 6,
+    "name": "E-Cruiser",
+    "type": "cruiser",
+    "pricePerHour": 15,
+    "available": 3,
+    "image": "/assets/bb1.png"
   }
 ]
