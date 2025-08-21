@@ -7,6 +7,115 @@ const ProfileDocument = require("../models/ProfileDocument");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "your_jwt_secret";
+const EditProfile = require("../models/EditProfile");
+const authMiddleware = require("../middleware/authMiddleware");
+
+// Single file upload (profile image)
+// router.post("/upload-profile", multer.single("profileImg"), (req, res) => {
+//   try {
+//     // req.file will contain the uploaded file info
+//     res.json({
+//       success: true,
+//       message: "File uploaded successfully",
+//       file: req.file,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// });
+
+// GET  → fetch profile
+router.get("/edit-profile", authMiddleware, async (req, res) => {
+  try {
+    const user = req.user; // now req.user is defined
+    const profile = await EditProfile.findOne({ user: user._id }).select(
+      "name email profileImage"
+    );
+
+    const profileData = {
+      mobile: user.mobile,
+      name: profile?.name || "",
+      email: profile?.email || user.email,
+      profileImage: profile?.profileImage || "",
+    };
+
+    res.status(200).json({ success: true, data: profileData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST update profile
+router.put("/edit-profile", authMiddleware, async (req, res) => {
+  const { name, email, profileImage, newMobile, otp } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Mobile update with in-memory OTP verification
+    if (newMobile && newMobile !== user.mobile) {
+      const validOtp = otpStore[newMobile];
+      if (!otp || otp !== validOtp) {
+        return res
+          .status(400)
+          .json({ message: "Invalid or expired OTP for new mobile" });
+      }
+      user.mobile = newMobile;
+      delete otpStore[newMobile];
+      await user.save();
+    }
+
+    // Update user profile fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (profileImage) user.profileImage = profileImage;
+
+    await user.save();
+
+    // Update or create EditProfile document
+    let profile = await EditProfile.findOne({ user: user._id });
+    if (profile) {
+      profile.name = user.name;
+      profile.email = user.email;
+      profile.profileImage = user.profileImage;
+      profile.mobile = user.mobile; // updated mobile
+      await profile.save();
+    } else {
+      profile = new EditProfile({
+        user: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        mobile: user.mobile,
+      });
+      await profile.save();
+    }
+
+    res
+      .status(200)
+      .json({ message: "Profile updated successfully", data: profile });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/send-otp", authMiddleware, (req, res) => {
+  const { mobile } = req.body;
+  if (!mobile)
+    return res.status(400).json({ message: "Mobile number required" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[mobile] = otp;
+
+  // expire OTP after 5 mins
+  setTimeout(() => delete otpStore[mobile], 5 * 60 * 1000);
+
+  console.log(`OTP for ${mobile}: ${otp}`);
+  res.status(200).json({ message: "OTP sent", otp }); // only for testing
+});
 
 // POST /upload-documents
 router.post(
@@ -129,16 +238,22 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Signup route
 router.post("/signup", async (req, res) => {
   const { name, email, mobile, password, dob, gender, dlNo, aadharNo } =
     req.body;
 
   try {
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
+    // Check if email or mobile already exists
+    const existingUser = await User.findOne({ $or: [{ email }, { mobile }] });
+    if (existingUser) {
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: "Email already exists" });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Mobile number already exists" });
+      }
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -158,6 +273,12 @@ router.post("/signup", async (req, res) => {
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
+    // Handle duplicate key error from MongoDB
+    if (err.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Email or mobile already exists" });
+    }
     res.status(500).json({ message: "Server error" });
   }
 });
